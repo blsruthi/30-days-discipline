@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Discipline 30 Challenge</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.json">
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #1f1c2c, #928dab);
+    color: white;
+    text-align: center;
+}
+
+/* LOGIN */
+#loginPage {
+    margin-top: 100px;
+}
+
+input {
+    padding: 10px;
+    margin: 10px;
+    border-radius: 8px;
+    border: none;
+    width: 200px;
+}
+
+button {
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: #00c9ff;
+    color: white;
+    font-weight: bold;
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+/* DASHBOARD */
+#dashboard {
+    display: none;
+    padding: 20px;
+}
+
+.day-box {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 15px;
+    margin: 10px;
+    display: inline-block;
+    width: 180px;
+}
+
+.success {
+    background: #2ecc71 !important;
+}
+
+.progress-container {
+    width: 80%;
+    background: rgba(255,255,255,0.2);
+    margin: 20px auto;
+    border-radius: 20px;
+}
+
+.progress {
+    height: 20px;
+    width: 0%;
+    background: #00ffcc;
+    border-radius: 20px;
+}
+
+.quote {
+    margin: 20px;
+    font-style: italic;
+}
+@keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.success {
+    background: #2ecc71 !important;
+    animation: pop 0.4s ease;
+}
+
+.celebrate {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: gold;
+    color: black;
+    padding: 15px;
+    border-radius: 10px;
+    font-weight: bold;
+    animation: pop 0.5s ease;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage">
+    <h1>🔥 30 Days Discipline Challenge 🔥</h1>
+    <input type="text" id="username" placeholder="Enter Username"><br>
+    <input type="password" id="password" placeholder="Enter Password"><br>
+    <button onclick="login()">Login</button>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+    <h2>Welcome, <span id="userDisplay"></span> 💪</h2>
+    <button onclick="logout()">Logout</button>
+
+    <div class="quote" id="quote"></div>
+
+    <div class="progress-container">
+        <div class="progress" id="progressBar"></div>
+    </div>
+
+    <h3 id="streak"></h3>
+
+    <div id="days"></div>
+</div>
+
+<script>
+const totalDays = 30;
+let completedDays = JSON.parse(localStorage.getItem("completedDays")) || [];
+
+const quotes = [
+"Discipline is choosing what you want most over what you want now.",
+"Wake up with determination. Sleep with satisfaction.",
+"Small daily improvements lead to big results.",
+"Consistency creates champions.",
+"You vs You. Every single day."
+];
+
+function login() {
+    const user = document.getElementById("username").value;
+    const pass = document.getElementById("password").value;
+
+    if(user && pass) {
+        localStorage.setItem("user", user);
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        document.getElementById("userDisplay").innerText = user;
+        showQuote();
+        createDays();
+        dailyReminder();
+    } else {
+        alert("Please enter username and password");
+    }
+}
+
+function logout() {
+    localStorage.removeItem("user");
+    location.reload();
+}
+
+function showQuote() {
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    document.getElementById("quote").innerText = "✨ " + randomQuote;
+}
+
+function createDays() {
+    const container = document.getElementById("days");
+    container.innerHTML = "";
+
+    for(let i=1; i<=totalDays; i++) {
+        const box = document.createElement("div");
+        box.className = "day-box";
+
+        if(completedDays.includes(i)) {
+            box.classList.add("success");
+        }
+
+        box.innerHTML = `
+            <h4>Day ${i}</h4>
+            <p>🌅 5:30 AM</p>
+            <p>🏃 Exercise</p>
+            <p>💻 HackerRank</p>
+            <button onclick="markDay(${i})">
+                ${completedDays.includes(i) ? "Completed" : "Mark Success"}
+            </button>
+        `;
+
+        container.appendChild(box);
+    }
+
+    updateProgress();
+}
+
+function markDay(day) {
+    if(!completedDays.includes(day)) {
+        completedDays.push(day);
+        localStorage.setItem("completedDays", JSON.stringify(completedDays));
+        celebrate();
+    }
+    createDays();
+}
+
+
+function updateProgress() {
+    const percent = (completedDays.length / totalDays) * 100;
+    document.getElementById("progressBar").style.width = percent + "%";
+    document.getElementById("streak").innerText =
+        "🔥 Total Completed Days: " + completedDays.length;
+}
+
+function dailyReminder() {
+    const today = new Date().toDateString();
+    const lastReminder = localStorage.getItem("lastReminder");
+
+    if(lastReminder !== today) {
+        alert("🌅 Wake up at 5:30 AM!\n🏃 Do Exercise\n💻 Practice HackerRank");
+        localStorage.setItem("lastReminder", today);
+    }
+}
+
+window.onload = function() {
+    const savedUser = localStorage.getItem("user");
+    if(savedUser) {
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        document.getElementById("userDisplay").innerText = savedUser;
+        showQuote();
+        createDays();
+        dailyReminder();
+    }
+};
+function celebrate() {
+    const msg = document.createElement("div");
+    msg.className = "celebrate";
+    msg.innerText = "🎉 Day Completed! Keep Going!";
+    document.body.appendChild(msg);
+
+    setTimeout(() => {
+        msg.remove();
+    }, 2000);
+}
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+}
+
+
+</script>
+
+</body>
+</html>
